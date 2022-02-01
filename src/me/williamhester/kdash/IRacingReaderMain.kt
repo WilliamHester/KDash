@@ -1,9 +1,7 @@
 package me.williamhester.kdash
 
 fun main() {
-  val reader = IRacingDataReader("/Users/williamhester/Downloads/iracing-data.ibt")
-//  val fileHeader = reader.fileHeader
-//  println(fileHeader)
+  val reader = IRacingDataReader(FileIRacingByteBufferProvider("/Users/williamhester/Downloads/iracing-data.ibt"))
+
   println(reader.readDouble("SessionTimeRemain"))
-//  println(reader.readInt("IsOnTrack"))
 }
