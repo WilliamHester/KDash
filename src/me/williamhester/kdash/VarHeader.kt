@@ -35,4 +35,8 @@ data class VarHeader(
     byteBuffer.nextString(IRSDK_MAX_DESC),
     byteBuffer.nextString(IRSDK_MAX_STRING),
   )
+
+  companion object {
+    const val SIZE = 144
+  }
 }

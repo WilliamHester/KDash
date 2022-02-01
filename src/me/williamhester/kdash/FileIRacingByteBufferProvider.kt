@@ -16,13 +16,10 @@ class FileIRacingByteBufferProvider(path: String) : ByteBufferProvider {
 
     file.seek(fileHeader.varHeaderOffset)
 
-    val headerByteBuffer = ByteBuffer.allocate(144).order(ByteOrder.LITTLE_ENDIAN)
+    val headerByteBuffer = ByteBuffer.allocate(VarHeader.SIZE * fileHeader.numVars).order(ByteOrder.LITTLE_ENDIAN)
+    file.read(headerByteBuffer.array())
     val headers = mutableMapOf<String, VarHeader>()
     for (i in 0 until fileHeader.numVars) {
-      headerByteBuffer.clear()
-
-      file.read(headerByteBuffer.array())
-
       val header = VarHeader(headerByteBuffer)
       headers[header.name] = header
     }
@@ -31,11 +28,10 @@ class FileIRacingByteBufferProvider(path: String) : ByteBufferProvider {
 
   override fun getLatest(): ByteBuffer {
     file.seek(48) // End of the file header
-    val varBufferHeaderBytes = ByteArray(16)
-    val varBufferHeaderByteBuffer = ByteBuffer.wrap(varBufferHeaderBytes).order(ByteOrder.LITTLE_ENDIAN)
+    val varBufferHeaderByteBuffer = ByteBuffer.allocate(16 * fileHeader.numBuf).order(ByteOrder.LITTLE_ENDIAN)
+    file.read(varBufferHeaderByteBuffer.array())
     val buffers = mutableListOf<VarBufferHeader>()
     for (i in 0 until fileHeader.numBuf) {
-      file.read(varBufferHeaderBytes)
       buffers.add(VarBufferHeader(varBufferHeaderByteBuffer))
     }
     buffers.sortByDescending { it.tickCount }

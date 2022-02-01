@@ -18,9 +18,12 @@ class LiveIRacingByteBufferProvider : ByteBufferProvider {
     fileHeader = FileHeader(headerBytes)
 
     val headers = mutableMapOf<String, VarHeader>()
+    val varHeaderBuffer =
+      pointer.getByteBuffer(
+        fileHeader.varHeaderOffset,
+        VarHeader.SIZE.toLong() * fileHeader.numVars
+      ).order(ByteOrder.LITTLE_ENDIAN)
     for (i in 0 until fileHeader.numVars) {
-      // 144 (file header) + i * 144 (var header size)
-      val varHeaderBuffer = pointer.getByteBuffer(144 * (i + 1L), 144).order(ByteOrder.LITTLE_ENDIAN)
       val header = VarHeader(varHeaderBuffer)
       headers[header.name] = header
     }
