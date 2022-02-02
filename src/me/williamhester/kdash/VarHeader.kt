@@ -1,6 +1,7 @@
 package me.williamhester.kdash
 
 import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 /**
  * struct irsdk_varHeader {
@@ -38,5 +39,14 @@ data class VarHeader(
 
   companion object {
     const val SIZE = 144
+
+    fun fromByteBufferToHeadersMap(varHeaderBuffer: ByteBuffer, numVars: Int): Map<String, VarHeader> {
+      val headers = mutableMapOf<String, VarHeader>()
+      for (i in 0 until numVars) {
+        val header = VarHeader(varHeaderBuffer)
+        headers[header.name] = header
+      }
+      return headers.toMap()
+    }
   }
 }

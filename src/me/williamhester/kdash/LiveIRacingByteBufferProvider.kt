@@ -10,38 +10,9 @@ import java.nio.ByteOrder
 class LiveIRacingByteBufferProvider : ByteBufferProvider {
   private val handle = kernel32.OpenFileMapping(WinBase.FILE_MAP_READ, false, "Local\\IRSDKMemMapFileName")
   private val pointer = kernel32.MapViewOfFile(handle, WinBase.FILE_MAP_READ, 0, 0, 0)
-  private val fileHeader: FileHeader
-  override val headers: Map<String, VarHeader>
 
-  init {
-    val headerBytes = pointer.getByteBuffer(0, 144).order(ByteOrder.LITTLE_ENDIAN)
-    fileHeader = FileHeader(headerBytes)
-
-    val headers = mutableMapOf<String, VarHeader>()
-    val varHeaderBuffer =
-      pointer.getByteBuffer(
-        fileHeader.varHeaderOffset,
-        VarHeader.SIZE.toLong() * fileHeader.numVars
-      ).order(ByteOrder.LITTLE_ENDIAN)
-    for (i in 0 until fileHeader.numVars) {
-      val header = VarHeader(varHeaderBuffer)
-      headers[header.name] = header
-    }
-    this.headers = headers.toMap()
-  }
-
-  override fun getLatest(): ByteBuffer {
-    val varBufferHeaderByteBuffer = pointer.getByteBuffer(48, 16L * fileHeader.numBuf).order(ByteOrder.LITTLE_ENDIAN)
-
-    val buffers = mutableListOf<VarBufferHeader>()
-    for (i in 0 until fileHeader.numBuf) {
-      buffers.add(VarBufferHeader(varBufferHeaderByteBuffer))
-    }
-    buffers.sortByDescending { it.tickCount }
-
-    val mostRecent = buffers[0]
-
-    return pointer.getByteBuffer(mostRecent.offset, fileHeader.bufLen.toLong())
+  override fun get(offset: Int, len: Int): ByteBuffer {
+    return pointer.getByteBuffer(offset.toLong(), len.toLong()).order(ByteOrder.LITTLE_ENDIAN)
   }
 
   override fun close() {
