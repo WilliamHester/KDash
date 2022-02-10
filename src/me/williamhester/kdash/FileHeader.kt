@@ -5,6 +5,11 @@ import java.nio.ByteOrder
 import java.util.stream.IntStream
 
 /**
+ * The file header consists of two parts: the main header and the "disk subheader."
+ *
+ * The subheader is simply appended immediately after the main header, so we can simply consider them together to be the
+ * header. For live data, I expect the disk subheader to simply be zeroed out.
+ *
  * struct irsdk_header
  * {
  *   0    int ver;               // this api header version, see IRSDK_VER
@@ -24,7 +29,16 @@ import java.util.stream.IntStream
  *   36   int bufLen;            // length in bytes for one line
  *   40   int pad1[2];           // (16 byte align)
  *   48   irsdk_varBuf varBuf[IRSDK_MAX_BUFS]; // buffers of data being written to
- *   104  total (irsdk_varBuf = 16)
+ *   112  total (irsdk_varBuf = 16)
+ * }
+ *
+ * struct irsdk_diskSubHeader {
+ *   112  time_t sessionStartDate;
+ *   120  double sessionStartTime;
+ *   128  double sessionEndTime;
+ *   136  int sessionLapCount;
+ *   140  int sessionRecordCount;
+ *   144
  * };
  */
 class FileHeader(
@@ -43,6 +57,9 @@ class FileHeader(
   val varHeaderOffset = buffer.getInt(28)
   val numBuf = buffer.getInt(32)
   val bufLen = buffer.getInt(36)
+
+  val sessionLapCount = buffer.getInt(136)
+  val sessionRecordCount = buffer.getInt(140)
 
   val varBufHeaders: List<VarBufferHeader> =
     IntStream.range(0, numBuf).mapToObj {

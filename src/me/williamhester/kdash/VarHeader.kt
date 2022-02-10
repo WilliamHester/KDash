@@ -1,7 +1,6 @@
 package me.williamhester.kdash
 
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 /**
  * struct irsdk_varHeader {
@@ -19,7 +18,7 @@ import java.nio.ByteOrder
  * };
  */
 data class VarHeader(
-  val type: Int,
+  val type: VarType,
   val offset: Int,
   val count: Int,
   val countAsTime: Boolean,
@@ -28,7 +27,7 @@ data class VarHeader(
   val unit: String,
 ) {
   constructor(byteBuffer: ByteBuffer) : this(
-    byteBuffer.int,
+    VarType.valueMap[byteBuffer.int]!!,
     byteBuffer.int,
     byteBuffer.int,
     byteBuffer.int != 0,
@@ -36,6 +35,21 @@ data class VarHeader(
     byteBuffer.nextString(IRSDK_MAX_DESC),
     byteBuffer.nextString(IRSDK_MAX_STRING),
   )
+
+  enum class VarType(private val int: Int) {
+    CHAR(0),
+    BOOLEAN(1),
+    INT(2),
+    BITFIELD(3),
+    FLOAT(4),
+    DOUBLE(5),
+    ETCOUNT(6),
+    ;
+
+    companion object {
+      internal val valueMap = values().associateBy { it.int }.toMap()
+    }
+  }
 
   companion object {
     const val SIZE = 144
