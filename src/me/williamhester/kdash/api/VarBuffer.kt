@@ -1,8 +1,14 @@
-package me.williamhester.kdash
+package me.williamhester.kdash.api
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
+/**
+ * A VarBuffer represents a chunk of data from a single point in time.
+ *
+ * Methods exist to get different types of data for the provided variable name. There's also a generic [get] function
+ * that allows for getting any type of data.
+ */
 class VarBuffer(
   private val headers: Map<String, VarHeader>,
   byteBuffer: ByteBuffer,

@@ -1,8 +1,13 @@
-package me.williamhester.kdash
+package me.williamhester.kdash.api
 
 import java.nio.ByteBuffer
 
-class VarBufferHeader(
+/**
+ * A header describing one of the live [VarBuffer]s.
+ *
+ * Data is retrieved _dynamically_ from the provided ByteBuffer to keep up with the live data.
+ */
+internal class VarBufferHeader(
   private val innerBuffer: ByteBuffer,
 ) {
   val tickCount: Int

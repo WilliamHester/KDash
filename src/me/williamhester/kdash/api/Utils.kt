@@ -1,4 +1,4 @@
-package me.williamhester.kdash
+package me.williamhester.kdash.api
 
 import java.nio.ByteBuffer
 

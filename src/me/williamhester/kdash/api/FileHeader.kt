@@ -1,4 +1,4 @@
-package me.williamhester.kdash
+package me.williamhester.kdash.api
 
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -61,7 +61,7 @@ class FileHeader(
   val sessionLapCount = buffer.getInt(136)
   val sessionRecordCount = buffer.getInt(140)
 
-  val varBufHeaders: List<VarBufferHeader> =
+  internal val varBufHeaders: List<VarBufferHeader> =
     IntStream.range(0, numBuf).mapToObj {
       VarBufferHeader(
         buffer.slice(48 + VarBufferHeader.SIZE * it, VarBufferHeader.SIZE).order(ByteOrder.LITTLE_ENDIAN)

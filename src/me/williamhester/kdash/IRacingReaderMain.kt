@@ -1,7 +1,10 @@
 package me.williamhester.kdash
 
+import me.williamhester.kdash.api.IRacingDataReader
+import java.nio.file.Paths
+
 fun main() {
-  val reader = IRacingDataReader(FileIRacingByteBufferProvider("/Users/williamhester/Downloads/iracing-data.ibt"))
+  val reader = IRacingDataReader.fromFile(Paths.get("/Users/williamhester/Downloads/iracing-data.ibt"))
 
   var foundOneBefore = false
   for (i in 0 until reader.fileHeader.sessionRecordCount) {

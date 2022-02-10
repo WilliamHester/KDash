@@ -1,8 +1,10 @@
-package me.williamhester.kdash
+package me.williamhester.kdash.api
 
 import java.nio.ByteBuffer
 
 /**
+ * A header for a single variable.
+ *
  * struct irsdk_varHeader {
  *   0    int type;                              // irsdk_VarType
  *   4    int offset;                            // offset from start of buffer row

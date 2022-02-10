@@ -1,8 +1,23 @@
-package me.williamhester.kdash
+package me.williamhester.kdash.api
 
 import java.nio.ByteOrder
+import java.nio.file.Path
 
-class IRacingDataReader(
+/**
+ * IRacingDataReader provides methods for accessing iRacing's telemetry data, both live and logged.
+ *
+ * This class serves two purposes:
+ * 1. Serving the file header and variable metadata
+ * 2. Serving the [VarBuffer]s.
+ *
+ * For live data, use [mostRecentBuffer] to access the most recent buffer. For logged data, [nthBuffer] will provide the
+ * nth buffer in order.
+ *
+ * To access this class, use one of the factory methods, either [fromFile] for logged data or [fromLiveData] for live
+ * data.
+ */
+class IRacingDataReader
+internal constructor(
   private val byteBufferProvider: ByteBufferProvider,
 ) {
   val fileHeader = FileHeader(byteBufferProvider.get(0, 144))
@@ -11,8 +26,6 @@ class IRacingDataReader(
       byteBufferProvider.get(fileHeader.varHeaderOffset, VarHeader.SIZE * fileHeader.numVars),
       fileHeader.numVars
     )
-  val headerNames: Collection<String>
-    get() = headers.keys
   val mostRecentBuffer: VarBuffer
     get() = findMostRecentBuffer()
 
@@ -28,5 +41,15 @@ class IRacingDataReader(
       headers,
       byteBufferProvider.get(latestHeader.offset, fileHeader.bufLen).duplicate().order(ByteOrder.LITTLE_ENDIAN),
     )
+  }
+
+  companion object {
+    fun fromFile(path: Path): IRacingDataReader {
+      return IRacingDataReader(FileIRacingByteBufferProvider(path))
+    }
+
+    fun fromLiveData(): IRacingDataReader {
+      return IRacingDataReader(LiveIRacingByteBufferProvider())
+    }
   }
 }
