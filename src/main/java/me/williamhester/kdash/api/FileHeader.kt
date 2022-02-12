@@ -3,6 +3,7 @@ package me.williamhester.kdash.api
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.stream.IntStream
+import kotlin.streams.toList
 
 /**
  * The file header consists of two parts: the main header and the "disk subheader."
@@ -64,7 +65,8 @@ class FileHeader(
   internal val varBufHeaders: List<VarBufferHeader> =
     IntStream.range(0, numBuf).mapToObj {
       VarBufferHeader(
-        buffer.slice(48 + VarBufferHeader.SIZE * it, VarBufferHeader.SIZE).order(ByteOrder.LITTLE_ENDIAN)
+        48 + VarBufferHeader.SIZE * it,
+        buffer,
       )
     }.toList()
 }
