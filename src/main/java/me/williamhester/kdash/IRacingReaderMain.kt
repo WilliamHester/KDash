@@ -1,14 +1,24 @@
 package me.williamhester.kdash
 
-import me.williamhester.kdash.api.IRacingDataReader
+import me.williamhester.kdash.api.IRacingDataMonitor
+import me.williamhester.kdash.api.IRacingLoggedDataReader
+import me.williamhester.kdash.testing.RateLimitedIterator
 import java.nio.file.Paths
 
 fun main() {
-  val reader = IRacingDataReader.fromFile(Paths.get("main/java/me/williamhester/kdash/sampledata/logged-data.ibt"))
+  val reader = //RateLimitedIterator(
+    IRacingLoggedDataReader(Paths.get("main/java/me/williamhester/kdash/sampledata/logged-data.ibt"))
+  //)
+  val monitor = IRacingDataMonitor(reader)
+
+  monitor.registerCallbacks(object : IRacingDataMonitor.Callbacks() {
+    override fun onMark() {
+      println("onMark!")
+    }
+  })
 
   var foundOneBefore = false
-  for (i in 0 until reader.fileHeader.sessionRecordCount) {
-    val buffer = reader.nthBuffer(i)
+  for (buffer in reader) {
     if (buffer.getBoolean("DriverMarker")) {
       if (foundOneBefore) continue
       foundOneBefore = true

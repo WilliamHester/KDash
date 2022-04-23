@@ -41,6 +41,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 # Maven Dependencies
 maven_install(
     artifacts = [
+        "com.google.guava:guava:31.1-jre",
         "net.java.dev.jna:jna:5.10.0",
         "net.java.dev.jna:jna-platform:5.10.0",
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10",

@@ -3,11 +3,10 @@ load("@io_bazel_rules_kotlin//kotlin:jvm.bzl", "kt_jvm_library")
 package(default_visibility = ["//visibility:public"])
 
 kt_jvm_library(
-    name = "api",
+    name = "testing",
     srcs = glob(["*.kt"]),
     deps = [
-        "@maven//:net_java_dev_jna_jna",
-        "@maven//:net_java_dev_jna_jna_platform",
-        "@maven//:org_jetbrains_kotlin_kotlin_stdlib_jdk8",
+        "//main/java/me/williamhester/kdash/api",
+        "@maven//:com_google_guava_guava_31_1_jre",
     ],
 )
