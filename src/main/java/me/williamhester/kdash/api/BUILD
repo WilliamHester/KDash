@@ -11,3 +11,8 @@ kt_jvm_library(
         "@maven//:org_jetbrains_kotlin_kotlin_stdlib_jdk8",
     ],
 )
+
+java_binary(
+    name = "api_deploy",
+    runtime_deps = [":api"],
+)

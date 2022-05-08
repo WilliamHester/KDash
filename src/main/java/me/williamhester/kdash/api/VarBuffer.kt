@@ -31,8 +31,9 @@ class VarBuffer(
 
   fun getByte(key: String, default: Byte? = null) = getInternal(key, default, ByteBuffer::get)
   fun getInt(key: String, default: Int? = null) = getInternal(key, default, ByteBuffer::getInt)
-  fun getBoolean(key: String, default: Boolean? = null) = getInternal(key, default) {
-    get().toInt() != 0
+  fun getBoolean(key: String, default: Boolean? = null): Boolean = getInternal(key, default) {
+    // TODO figure out why this won't work with get()
+    getByte(key).toInt() != 0
   }
   fun getDouble(key: String, default: Double? = null) = getInternal(key, default, ByteBuffer::getDouble)
   fun getFloat(key: String, default: Float? = null) = getInternal(key, default, ByteBuffer::getFloat)
