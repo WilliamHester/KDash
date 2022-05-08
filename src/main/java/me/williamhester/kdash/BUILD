@@ -4,6 +4,7 @@ kt_jvm_library(
     name = "kdash",
     srcs = glob(["*.kt"]),
     data = [
+      "//main/java/me/williamhester/kdash/sampledata:live-data.ibt",
       "//main/java/me/williamhester/kdash/sampledata:logged-data.ibt",
     ],
     deps = [

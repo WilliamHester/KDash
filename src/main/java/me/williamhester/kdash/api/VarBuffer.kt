@@ -29,18 +29,16 @@ class VarBuffer(
     }
   }
 
-  fun getByte(key: String) = getInternal(key, ByteBuffer::get)
+  fun getByte(key: String, default: Byte? = null) = getInternal(key, default, ByteBuffer::get)
+  fun getInt(key: String, default: Int? = null) = getInternal(key, default, ByteBuffer::getInt)
+  fun getBoolean(key: String, default: Boolean? = null) = getInternal(key, default) {
+    get().toInt() != 0
+  }
+  fun getDouble(key: String, default: Double? = null) = getInternal(key, default, ByteBuffer::getDouble)
+  fun getFloat(key: String, default: Float? = null) = getInternal(key, default, ByteBuffer::getFloat)
 
-  fun getInt(key: String) = getInternal(key, ByteBuffer::getInt)
-
-  fun getBoolean(key: String) = getInternal(key, ByteBuffer::get).toInt() != 0
-
-  fun getDouble(key: String) = getInternal(key, ByteBuffer::getDouble)
-
-  fun getFloat(key: String) = getInternal(key, ByteBuffer::getFloat)
-
-  private fun <T> getInternal(varName: String, getter: ByteBuffer.(Int) -> T): T {
-    val header = headers[varName] ?: throw Exception("$varName not found")
+  private fun <T> getInternal(varName: String, default: T?, getter: ByteBuffer.(Int) -> T): T {
+    val header = headers[varName] ?: return default ?: throw Exception("$varName not found")
     return byteBuffer.getter(header.offset)
   }
 }

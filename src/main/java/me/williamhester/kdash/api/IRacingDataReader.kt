@@ -12,7 +12,7 @@ internal constructor(
   internal val byteBufferProvider: ByteBufferProvider,
 ) : Iterator<VarBuffer> {
   val fileHeader = FileHeader(byteBufferProvider.get(0, 144))
-  protected val headers: Map<String, VarHeader> =
+  val headers: Map<String, VarHeader> =
     VarHeader.fromByteBufferToHeadersMap(
       byteBufferProvider.get(fileHeader.varHeaderOffset, VarHeader.SIZE * fileHeader.numVars),
       fileHeader.numVars

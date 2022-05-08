@@ -12,13 +12,11 @@ class IRacingDataMonitor(
   }
 
   private fun run() {
+    val differ = BufferDiffer()
     for (currentBuffer in reader) {
+      differ.updateBuffer(currentBuffer)
       // When we get a new tick, send updated values to subscribers
-      if (previousBuffer?.getBoolean("DriverMarker") != currentBuffer.getBoolean("DriverMarker")) {
-        for (callback in callbacksList) {
-          callback.onMark()
-        }
-      }
+      differ.checkBooleanChangedToTrue("DriverMarker") { onMark() }
       previousBuffer = currentBuffer
     }
   }
@@ -33,5 +31,29 @@ class IRacingDataMonitor(
 
   abstract class Callbacks {
     open fun onMark() {}
+  }
+
+  private inner class BufferDiffer {
+    private var lastBuffer: VarBuffer? = null
+    private var currentBuffer: VarBuffer? = null
+
+    fun updateBuffer(newBuffer: VarBuffer) {
+      lastBuffer = currentBuffer
+      currentBuffer = newBuffer
+    }
+
+    fun checkBooleanChangedToTrue(key: String, block: Callbacks.() -> Unit) {
+      if ((lastBuffer?.getBoolean(key) == false) && currentBuffer!!.getBoolean(key)) {
+        callBack {
+          block()
+        }
+      }
+    }
+
+    private fun callBack(block: Callbacks.() -> Unit) {
+      for (callback in callbacksList) {
+        callback.block()
+      }
+    }
   }
 }
