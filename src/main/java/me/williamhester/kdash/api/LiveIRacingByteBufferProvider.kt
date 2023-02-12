@@ -21,7 +21,6 @@ class LiveIRacingByteBufferProvider : ByteBufferProvider {
   }
 
   companion object {
-    private val kernel32 =
-      Native.loadLibrary("kernel32", Kernel32::class.java, W32APIOptions.DEFAULT_OPTIONS) as Kernel32
+    private val kernel32 = Native.load("kernel32", Kernel32::class.java, W32APIOptions.DEFAULT_OPTIONS)
   }
 }

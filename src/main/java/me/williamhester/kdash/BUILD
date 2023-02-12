@@ -6,6 +6,7 @@ kt_jvm_library(
     data = [
       "//main/java/me/williamhester/kdash/sampledata:live-data.ibt",
       "//main/java/me/williamhester/kdash/sampledata:logged-data.ibt",
+      "//main/java/me/williamhester/kdash/sampledata:spa-race.ibt",
     ],
     deps = [
         "//main/java/me/williamhester/kdash/api",
