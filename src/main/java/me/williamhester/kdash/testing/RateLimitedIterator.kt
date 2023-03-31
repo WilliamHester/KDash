@@ -1,12 +1,11 @@
 package me.williamhester.kdash.testing
 
 import com.google.common.util.concurrent.RateLimiter
-import me.williamhester.kdash.api.VarBuffer
 
-class RateLimitedIterator(private val iterator: Iterator<VarBuffer>) : Iterator<VarBuffer> {
+class RateLimitedIterator<T>(private val iterator: Iterator<T>) : Iterator<T> {
   private val rateLimiter = RateLimiter.create(60.0)
 
-  override fun next(): VarBuffer {
+  override fun next(): T {
     rateLimiter.acquire()
     return iterator.next()
   }

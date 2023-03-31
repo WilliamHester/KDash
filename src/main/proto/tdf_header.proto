@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package me.williamhester.kdash.swing.laphero;
+
+message DataHeader {
+  int32 rate = 1;
+  int32 data_points = 2;
+  repeated DataSection sections = 3;
+}
+
+enum EntryType {
+  ENTRY_TYPE_UNDEFINED = 0;
+
+  SPEED = 1;
+  LAP_PCT = 2;
+  GPS_LAT = 3;
+  GPS_LON = 4;
+  BRAKE_PCT = 5;
+  GAS_PCT = 6;
+  STEERING = 7;
+  GEAR = 8;
+  CLUTCH_PCT = 9;
+  RPM = 11;
+
+  UNKNOWN_1 = 10;
+  UNKNOWN_2 = 12;
+  // Maybe acceleration?
+  UNKNOWN_3 = 13;
+}
+
+message DataSection {
+  EntryType type = 1;
+  float min = 7;
+  float max = 8;
+  int32 num_points = 9;
+  int32 len = 10;
+}
