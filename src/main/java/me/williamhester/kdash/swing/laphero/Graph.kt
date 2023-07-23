@@ -1,5 +1,6 @@
 package me.williamhester.kdash.swing.laphero
 
+import me.williamhester.kdash.api.IRacingLiveDataReader
 import me.williamhester.kdash.api.IRacingLoggedDataReader
 import java.awt.BasicStroke
 import java.awt.Color
@@ -47,7 +48,7 @@ class GraphDrawer(
       return
     }
     minX = dataPoints[0].lapPercentage
-    maxX = dataPoints.maxOf { it.lapPercentage }
+    maxX = dataPoints.last().lapPercentage
 
     // Draw horizontal lines in blue
     g2d.color = Color(0x383838)
@@ -64,12 +65,15 @@ class GraphDrawer(
 
     val interpolatedPastData = interpolateData(dataPoints, comparisonValues.filter { it.lapPercentage in minX..maxX })
 
-    drawLineForProperty2(g2d, Color(0x005E00), interpolatedPastData, width / 2 - PADDING, 0) { it.gasPercentage }
-    drawLineForProperty2(g2d, Color(0x6C0000), interpolatedPastData, width / 2 - PADDING, 0) { it.brakePercentage }
-    drawLineForProperty(g2d, Color(0x005E00), futureDataPoints, width / 2 - PADDING, width / 2 - PADDING) { it.gasPercentage }
-    drawLineForProperty(g2d, Color(0x6C0000), futureDataPoints, width / 2 - PADDING, width / 2 - PADDING) { it.brakePercentage }
-    drawLineForProperty(g2d, Color(0x00AA00), dataPoints, width / 2 - PADDING, 0) { it.gasPercentage }
-    drawLineForProperty(g2d, Color(0x880000), dataPoints, width / 2 - PADDING, 0) { it.brakePercentage }
+    val midpoint = (width * dataPointsToShow) / (dataPointsToShow + PAST_DATA_POINTS)
+    val leftOfMidpoint = width - midpoint
+
+    drawLineForProperty2(g2d, Color(0x005E00), interpolatedPastData, leftOfMidpoint, 0) { it.gasPercentage }
+    drawLineForProperty2(g2d, Color(0x6C0000), interpolatedPastData, leftOfMidpoint, 0) { it.brakePercentage }
+    drawLineForProperty(g2d, Color(0x005E00), futureDataPoints, midpoint, leftOfMidpoint) { it.gasPercentage }
+    drawLineForProperty(g2d, Color(0x6C0000), futureDataPoints, midpoint, leftOfMidpoint) { it.brakePercentage }
+    drawLineForProperty(g2d, Color(0x00AA00), dataPoints, leftOfMidpoint, 0) { it.gasPercentage }
+    drawLineForProperty(g2d, Color(0x880000), dataPoints, leftOfMidpoint, 0) { it.brakePercentage }
 
     g2d.dispose()
   }
@@ -148,7 +152,7 @@ class GraphDrawer(
   ) {
     if (dataPoints.isEmpty()) return
     g2d.color = color
-    g2d.stroke = BasicStroke(1.8f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, null, 0.0f,)
+    g2d.stroke = BasicStroke(2.5f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1.0f, null, 0.0f,)
     val height = height - PADDING * 2
 
     val dataPointsIterator = dataPoints.iterator()
@@ -186,10 +190,13 @@ class GraphDrawer(
     private const val PADDING = 8
     private const val ORIGIN_X = PADDING
     private const val ORIGIN_Y = PADDING
-    private const val WIDTH = 500
+    private const val WIDTH = 750
     private const val HEIGHT = 200
   }
 }
+
+private const val LOOKAHEAD_DATA_POINTS = 180
+private const val PAST_DATA_POINTS = 600
 
 fun main() {
   // 1. Parse tdf
@@ -199,27 +206,31 @@ fun main() {
 //  val rateLimitedIterator = RateLimitedIterator(tdfValues.iterator())
 
 
-  val tdfB = Paths.get("/Users/williamhester/Programming/tdf-parsing/tdf-spa")
+  val currentUser = System.getProperty("user.name")
+  val tdfB = Paths.get("C:\\Users\\$currentUser\\Downloads\\tdf")
   val tdfBParser = TdfParser(tdfB)
   val comparisonValues = tdfBParser.parseTdf()
   // 2. Read data from iRacing
-  val dataReader =
-    IRacingLoggedDataReader(Paths.get("/Users/williamhester/Downloads/session70D82C53.ibt"))
-  val rateLimitedIterator = RateLimitedIterator(dataReader)
+  val dataReader = IRacingLiveDataReader()
+//    IRacingLoggedDataReader(Paths.get("/Users/williamhester/Downloads/session70D82C53.ibt"))
+//  val rateLimitedIterator = RateLimitedIterator(dataReader)
 
   val liveValues = LinkedList<DataPoint>()
 
-  val drawer = GraphDrawer(liveValues, comparisonValues).apply {
+  val drawer = GraphDrawer(liveValues, comparisonValues, LOOKAHEAD_DATA_POINTS).apply {
     background = Color(0x27292F)
   }
 
   JFrame("Lap Hero").apply {
+    defaultCloseOperation = JFrame.EXIT_ON_CLOSE
+    isAlwaysOnTop = true
+//    isUndecorated = true
+    isVisible = true
+
     add(drawer)
     pack()
-    isVisible = true
-    defaultCloseOperation = JFrame.EXIT_ON_CLOSE
   }
-  for (item in rateLimitedIterator) {
+  for (item in dataReader) {
     liveValues.add(
 //      item
       DataPoint(
@@ -229,7 +240,7 @@ fun main() {
         speed = item.getFloat("Speed"),
       )
     )
-    while (liveValues.size > 180) {
+    while (liveValues.size > PAST_DATA_POINTS) {
       liveValues.removeFirst()
     }
     drawer.dataPoints = liveValues.toList()
