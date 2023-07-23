@@ -38,6 +38,16 @@ class VarBuffer(
   fun getDouble(key: String, default: Double? = null) = getInternal(key, default, ByteBuffer::getDouble)
   fun getFloat(key: String, default: Float? = null) = getInternal(key, default, ByteBuffer::getFloat)
 
+  fun getArrayFloat(varName: String, position: Int, default: Float? = null): Float {
+    val header = headers[varName] ?: return default ?: throw Exception("$varName not found")
+    return byteBuffer.getFloat(header.offset + position * 4)
+  }
+
+  fun getArrayInt(varName: String, position: Int, default: Int? = null): Int {
+    val header = headers[varName] ?: return default ?: throw Exception("$varName not found")
+    return byteBuffer.getInt(header.offset + position * 4)
+  }
+
   private fun <T> getInternal(varName: String, default: T?, getter: ByteBuffer.(Int) -> T): T {
     val header = headers[varName] ?: return default ?: throw Exception("$varName not found")
     return byteBuffer.getter(header.offset)

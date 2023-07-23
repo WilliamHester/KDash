@@ -10,7 +10,16 @@ fun main(args: Array<String>) {
 
   // Print each variable and its unit
 
-  reader.headers.keys.forEach { println("$it\t${reader.headers[it]!!.description}\t${reader.headers[it]!!.unit}") }
+  reader.headers.keys.forEach {
+    println("${reader.headers[it]!!.offset}\t: $it\t${reader.headers[it]!!.description}\t${reader.headers[it]!!.unit}")
+  }
+
+  val first = reader.next()
+  println(first.getArrayInt("CarIdxLap", 0))
+  println(first.getArrayInt("CarIdxLap", 1))
+  println(first.getArrayInt("CarIdxLap", 2))
+  println(first.getArrayInt("CarIdxLap", 3))
+
   if (System.currentTimeMillis() > 0) exitProcess(0)
 
 //  val weekendInfo = reader.sessionMetadata["WeekendInfo"]

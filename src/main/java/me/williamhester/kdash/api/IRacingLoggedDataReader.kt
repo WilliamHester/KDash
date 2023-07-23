@@ -5,6 +5,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Scanner
 import java.util.Stack
+import kotlin.math.max
 
 /** An [IRacingDataReader] that reads from a .ibt file. */
 class IRacingLoggedDataReader(path: Path) : IRacingDataReader(FileIRacingByteBufferProvider(path)) {
@@ -13,7 +14,10 @@ class IRacingLoggedDataReader(path: Path) : IRacingDataReader(FileIRacingByteBuf
   val sessionMetadata = parseMetadata(path)
 
   override fun next(): VarBuffer {
-    val offset = fileHeader.sessionInfoOffset + fileHeader.sessionInfoLen + i * fileHeader.bufLen
+    val offset = max(
+      fileHeader.sessionInfoOffset + fileHeader.sessionInfoLen,
+      fileHeader.varHeaderOffset + 144 * fileHeader.numVars,
+    ) + i * fileHeader.bufLen
     i++
     return VarBuffer(headers, byteBufferProvider.get(offset, fileHeader.bufLen).order(ByteOrder.LITTLE_ENDIAN))
   }
