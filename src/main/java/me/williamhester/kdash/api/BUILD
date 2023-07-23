@@ -16,3 +16,9 @@ java_binary(
     name = "api_deploy",
     runtime_deps = [":api"],
 )
+
+java_binary(
+    name = "iracing_live_data_logger",
+    runtime_deps = [":api"],
+    main_class = "me.williamhester.kdash.api.IRacingLiveDataLoggerKt",
+)

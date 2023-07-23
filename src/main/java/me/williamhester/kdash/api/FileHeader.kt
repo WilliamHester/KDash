@@ -1,7 +1,6 @@
 package me.williamhester.kdash.api
 
 import java.nio.ByteBuffer
-import java.nio.ByteOrder
 import java.util.stream.IntStream
 import kotlin.streams.toList
 
@@ -43,7 +42,7 @@ import kotlin.streams.toList
  * };
  */
 class FileHeader(
-  private val buffer: ByteBuffer,
+  internal val buffer: ByteBuffer,
 ) {
   val version = buffer.getInt(0)
   val status = buffer.getInt(4)

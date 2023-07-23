@@ -13,7 +13,7 @@ class VarBuffer(
   private val headers: Map<String, VarHeader>,
   byteBuffer: ByteBuffer,
 ) {
-  private val byteBuffer = byteBuffer.duplicate().order(ByteOrder.LITTLE_ENDIAN)
+  internal val byteBuffer = byteBuffer.duplicate().order(ByteOrder.LITTLE_ENDIAN)
 
   operator fun get(key: String): Any {
     val header = headers[key] ?: throw Exception("Key '$key' not found")
