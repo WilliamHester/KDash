@@ -7,5 +7,6 @@ kt_jvm_library(
     srcs = glob(["*.kt"]),
     deps = [
         "//main/java/me/williamhester/kdash/api",
+        "@maven//:com_google_guava_guava_31_1_jre",
     ],
 )

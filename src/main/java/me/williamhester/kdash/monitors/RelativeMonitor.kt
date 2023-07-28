@@ -2,51 +2,34 @@ package me.williamhester.kdash.monitors
 
 import me.williamhester.kdash.api.VarBuffer
 import me.williamhester.kdash.api.VarHeader
-import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.LinkedBlockingQueue
 
 /**
  * RelativeMonitor keeps track of the duration that a car was at the driver's car.
  */
 class RelativeMonitor(
   private val headers: Map<String, VarHeader>,
-) : Runnable {
+) {
   private val driverDistancesByTick = ConcurrentHashMap<Int, MutableList<Float>>()
   private val tickSeconds = mutableListOf<Double>()
-  @Volatile private var latestSeconds = 0.0
-  private val lock = Any()
-  private val workQueue = LinkedBlockingQueue<Optional<VarBuffer>>()
+  private var latestSeconds = 0.0
 
-  fun process(buffer: VarBuffer?) {
-    workQueue.add(Optional.ofNullable(buffer))
-  }
+  fun process(currentBuffer: VarBuffer) {
+    val distPctHeader = headers["CarIdxLapDistPct"]!!
+    val numDrivers = distPctHeader.count
 
-  override fun run() {
-    while (true) {
-      val currentBufferOptional = workQueue.take()
-      if (!currentBufferOptional.isPresent) break
+    val latestSeconds = currentBuffer.getDouble("SessionTime")
+    tickSeconds.add(latestSeconds)
+    this.latestSeconds = latestSeconds
 
-      val currentBuffer = currentBufferOptional.get()
-
-      val distPctHeader = headers["CarIdxLapDistPct"]!!
-      val numDrivers = distPctHeader.count
-
-      synchronized(lock) {
-        val latestSeconds = currentBuffer.getDouble("SessionTime")
-        tickSeconds.add(latestSeconds)
-        this.latestSeconds = latestSeconds
-
-        for (i in 0 until numDrivers) {
-          val totalCompletedLaps =
-            currentBuffer.getArrayInt("CarIdxLapCompleted", i) + currentBuffer.getArrayFloat("CarIdxLapDistPct", i)
-          driverDistancesByTick.computeIfAbsent(i) { mutableListOf() }.add(totalCompletedLaps)
-        }
-      }
+    for (i in 0 until numDrivers) {
+      val totalCompletedLaps =
+        currentBuffer.getArrayInt("CarIdxLapCompleted", i) + currentBuffer.getArrayFloat("CarIdxLapDistPct", i)
+      driverDistancesByTick.computeIfAbsent(i) { mutableListOf() }.add(totalCompletedLaps)
     }
   }
 
-  fun getGaps(): List<GapToCarId> = synchronized(lock) {
+  fun getGaps(): List<GapToCarId> {
     val sessionSeconds = latestSeconds
     val car0Distances = driverDistancesByTick[0]!!
     val car0CurrentDistance = car0Distances.last()

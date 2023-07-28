@@ -4,6 +4,8 @@ import java.nio.ByteOrder
 
 /** An [IRacingDataReader] that reads from the live data. */
 class IRacingLiveDataReader : IRacingDataReader(LiveIRacingByteBufferProvider()) {
+  override val metadata: SessionMetadata
+    get() = parseMetadata()
   private val latestHeader: VarBufferHeader
     get() = fileHeader.varBufHeaders.maxByOrNull { it.tickCount }!!
 
