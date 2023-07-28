@@ -1,26 +1,84 @@
 package me.williamhester.kdash
 
 import me.williamhester.kdash.api.IRacingLoggedDataReader
+import me.williamhester.kdash.monitors.DriverCarLapMonitor
+import me.williamhester.kdash.monitors.RelativeMonitor
+import me.williamhester.kdash.testing.RateLimitedIterator
 import java.nio.file.Paths
+import java.util.concurrent.Executors
 import kotlin.system.exitProcess
 
+private fun gapString(gap: Double): String {
+  var secondsString = String.format("%.3f", gap)
+  if (gap > 0) secondsString = "+$secondsString"
+  return secondsString
+}
 
 fun main(args: Array<String>) {
   val reader = IRacingLoggedDataReader(Paths.get(args[0]))
 
   // Print each variable and its unit
-
   reader.headers.keys.forEach {
     println("${reader.headers[it]!!.offset}\t: $it\t${reader.headers[it]!!.description}\t${reader.headers[it]!!.unit}")
   }
 
-  val first = reader.next()
-  println(first.getArrayInt("CarIdxLap", 0))
-  println(first.getArrayInt("CarIdxLap", 1))
-  println(first.getArrayInt("CarIdxLap", 2))
-  println(first.getArrayInt("CarIdxLap", 3))
+  val relativeMonitor = RelativeMonitor(reader.headers)
+  val lapMonitor = DriverCarLapMonitor(reader, relativeMonitor)
+  while (reader.hasNext()) {
+    val currentBuffer = reader.next()
+    relativeMonitor.process(currentBuffer)
+    lapMonitor.process(currentBuffer)
+  }
+
+  println(DriverCarLapMonitor.LogEntry.HEADER)
+  for (entry in lapMonitor.logEntries) {
+    println(entry)
+  }
+//  val executor = Executors.newCachedThreadPool()
+//
+//  val relativeMonitor = RelativeMonitor(reader.headers)
+//  executor.submit(relativeMonitor)
+//
+//  executor.submit {
+//    while (reader.hasNext()) {
+//      relativeMonitor.process(reader.next())
+//    }
+//  }
+//
+//  Thread.sleep(500)
+//
+//  var receivedEntries = 0
+//  while (true) {
+//    receivedEntries++
+//    if (receivedEntries > 60 * 60 && receivedEntries % 60 == 0) {
+//      for (entry in relativeMonitor.getGaps()) {
+//        val secondsString = gapString(entry.gap)
+//        println("Car #${String.format("%02d", entry.carId)}: $secondsString")
+//      }
+//      println()
+//    }
+//  }
 
   if (System.currentTimeMillis() > 0) exitProcess(0)
+
+  val iterator = reader.iterator()
+
+  val rateLimitedIterator = RateLimitedIterator(iterator)
+
+  for (item in rateLimitedIterator) {
+    print(
+      "\r" +
+          "${item.getDouble("SessionTime")}\t" +
+          "${item.getArrayFloat("CarIdxLapDistPct", 0)}\t" +
+          "${item.getArrayFloat("CarIdxLapDistPct", 1)}\t" +
+          "${item.getArrayFloat("CarIdxLapDistPct", 2)}\t" +
+          "${item.getArrayFloat("CarIdxLapDistPct", 3)}\t"
+    )
+  }
+//  println(first.getArrayInt("CarIdxLap", 0))
+//  println(first.getArrayInt("CarIdxLap", 1))
+//  println(first.getArrayInt("CarIdxLap", 2))
+//  println(first.getArrayInt("CarIdxLap", 3))
 
 //  val weekendInfo = reader.sessionMetadata["WeekendInfo"]
 //  println("SessionID: ${weekendInfo["SessionID"].value}")

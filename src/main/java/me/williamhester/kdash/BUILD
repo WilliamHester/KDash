@@ -10,6 +10,7 @@ kt_jvm_library(
     ],
     deps = [
         "//main/java/me/williamhester/kdash/api",
+        "//main/java/me/williamhester/kdash/monitors",
         "//main/java/me/williamhester/kdash/testing",
     ],
 )
