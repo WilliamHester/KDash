@@ -11,4 +11,7 @@ import java.nio.ByteBuffer
 internal interface ByteBufferProvider : AutoCloseable {
   /** Get a ByteBuffer starting at [offset] with the given [length]. */
   fun get(offset: Int, length: Int): ByteBuffer
+
+  /** Get an array of bytes starting at [offset] with the given [length]. */
+  fun getByteArray(offset: Int, length: Int): ByteArray
 }

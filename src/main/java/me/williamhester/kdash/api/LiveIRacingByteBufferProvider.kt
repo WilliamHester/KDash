@@ -16,6 +16,10 @@ class LiveIRacingByteBufferProvider : ByteBufferProvider {
     return pointer.getByteBuffer(offset.toLong(), length.toLong()).order(ByteOrder.LITTLE_ENDIAN)
   }
 
+  override fun getByteArray(offset: Int, length: Int): ByteArray {
+    return pointer.getByteArray(offset.toLong(), length)
+  }
+
   override fun close() {
     kernel32.CloseHandle(handle)
   }

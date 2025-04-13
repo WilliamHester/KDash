@@ -10,6 +10,7 @@ import kotlin.streams.toList
  * The subheader is simply appended immediately after the main header, so we can simply consider them together to be the
  * header. For live data, I expect the disk subheader to simply be zeroed out.
  *
+ * ```c++
  * struct irsdk_header
  * {
  *   0    int ver;               // this api header version, see IRSDK_VER
@@ -40,6 +41,7 @@ import kotlin.streams.toList
  *   140  int sessionRecordCount;
  *   144
  * };
+ * ```
  */
 class FileHeader(
   internal val buffer: ByteBuffer,

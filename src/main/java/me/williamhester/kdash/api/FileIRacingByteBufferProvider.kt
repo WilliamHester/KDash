@@ -16,6 +16,10 @@ internal class FileIRacingByteBufferProvider(path: Path) : ByteBufferProvider {
     return buffer.flip()
   }
 
+  override fun getByteArray(offset: Int, length: Int): ByteArray {
+    return get(offset, length).array()
+  }
+
   override fun close() {
     fileChannel.close()
   }

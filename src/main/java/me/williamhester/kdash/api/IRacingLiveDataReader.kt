@@ -7,7 +7,10 @@ class IRacingLiveDataReader : IRacingDataReader(LiveIRacingByteBufferProvider())
   override val metadata: SessionMetadata
     get() = parseMetadata()
   private val latestHeader: VarBufferHeader
-    get() = fileHeader.varBufHeaders.maxByOrNull { it.tickCount }!!
+    get() = fileHeader.varBufHeaders.maxByOrNull {
+      val tickCount = it.tickCount
+      tickCount
+    }!!
 
   private var previousTick = 0
 

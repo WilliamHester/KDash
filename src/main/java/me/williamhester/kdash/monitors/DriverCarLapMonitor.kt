@@ -3,6 +3,8 @@ package me.williamhester.kdash.monitors
 import com.google.common.base.Joiner
 import me.williamhester.kdash.api.IRacingDataReader
 import me.williamhester.kdash.api.VarBuffer
+import kotlin.contracts.contract
+import kotlin.math.max
 import kotlin.math.min
 
 class DriverCarLapMonitor(
@@ -12,6 +14,8 @@ class DriverCarLapMonitor(
 
   private val _logEntries = mutableListOf<LogEntry>()
   val logEntries: List<LogEntry> = _logEntries
+
+  private var driverCarIdx = -1
 
   private var lapNum = -1
   private var driverName = "unknown"
@@ -28,6 +32,7 @@ class DriverCarLapMonitor(
   private var pitOut = false
   private var pitTime = 0.0
   private var pitStartTime = 0.0
+  private var maxSpeed = 0.0F
 
   private var previousInPits = false
   private var wasInPitBox = false
@@ -36,6 +41,10 @@ class DriverCarLapMonitor(
   private var minFuelRemaining = 1000.0F
 
   fun process(buffer: VarBuffer) {
+    if (driverCarIdx == -1) {
+      driverCarIdx = reader.metadata["DriverInfo"]["DriverCarIdx"].value.toInt()
+    }
+
     val currentLap = buffer.getInt("Lap")
     val fuelRemaining = buffer.getFloat("FuelLevel")
     // Check that currentLap > lapNum in case we tow. Tows actually go back to lap 0 temporarily.
@@ -45,35 +54,40 @@ class DriverCarLapMonitor(
       position = buffer.getInt("PlayerCarPosition")
       lapTime = buffer.getDouble("SessionTime") - lapStartTime
       trackTemp = buffer.getFloat("TrackTempCrew")
-      driverName = reader.metadata["DriverInfo"]["Drivers"][0]["UserName"].value
+      driverName = reader.metadata["DriverInfo"]["Drivers"][driverCarIdx]["UserName"].value
       driverIncidents = buffer.getInt("PlayerCarDriverIncidentCount")
       teamIncidents = buffer.getInt("PlayerCarTeamIncidentCount")
       val fuelUsed = (this.fuelRemaining - fuelRemaining) + fuelUsedBeforeRefuel
       this.fuelRemaining = fuelRemaining
 
-      val gapToLeader = relativeMonitor.getGaps()[0].gap
+      val gapToLeader = if (driverCarIdx < relativeMonitor.getGaps().size) {
+        relativeMonitor.getGaps()[driverCarIdx].gap
+      } else {
+        0.0
+      }
 
       // Log the previous lap
       val newEntry =
         LogEntry(
-          lapNum,
-          driverName,
-          position,
-          lapTime,
-          gapToLeader,
-          fuelRemaining,
-          fuelUsed,
-          trackTemp,
-          driverIncidents,
-          teamIncidents,
-          optionalRepairsRemaining,
-          repairsRemaining,
-          pitIn,
-          pitOut,
-          pitTime,
+          lapNum = lapNum,
+          driverName = driverName,
+          position = position,
+          lapTime = lapTime,
+          gapToLeader = gapToLeader,
+          fuelRemaining = fuelRemaining,
+          fuelUsed = fuelUsed,
+          trackTemp = trackTemp,
+          driverIncidents = driverIncidents,
+          teamIncidents = teamIncidents,
+          optionalRepairsRemaining = optionalRepairsRemaining,
+          repairsRemaining = repairsRemaining,
+          pitIn = pitIn,
+          pitOut = pitOut,
+          pitTime = pitTime,
+          maxSpeed = maxSpeed,
         )
-//      println(newEntry)
-      _logEntries.add(newEntry)
+      // Ignore laps before the start of the race
+      if (lapNum > 0) _logEntries.add(newEntry)
 
       // Values that are only accurate at the start of the new lap
       lapNum = currentLap
@@ -86,6 +100,8 @@ class DriverCarLapMonitor(
       fuelUsedBeforeRefuel = 0.0F
       minFuelRemaining = fuelRemaining
       didAddFuel = false
+
+      maxSpeed = 0.0F
     }
 
     minFuelRemaining = min(fuelRemaining, minFuelRemaining)
@@ -102,7 +118,7 @@ class DriverCarLapMonitor(
     pitIn = pitIn || (!previousInPits && inPits)
     pitOut = pitOut || (previousInPits && !inPits)
 
-    val trackLocFlags = buffer.getArrayInt("CarIdxTrackSurface", 0)
+    val trackLocFlags = buffer.getArrayInt("CarIdxTrackSurface", driverCarIdx)
     val isInPitBox = trackLocFlags == 1
 
     if (!wasInPitBox && isInPitBox) {
@@ -117,6 +133,8 @@ class DriverCarLapMonitor(
 
     wasInPitBox = isInPitBox
     previousInPits = inPits
+
+    maxSpeed = max(maxSpeed, buffer.getFloat("Speed"))
   }
 
   data class LogEntry(
@@ -135,57 +153,6 @@ class DriverCarLapMonitor(
     val pitIn: Boolean,
     val pitOut: Boolean,
     val pitTime: Double,
-  ) {
-    override fun toString(): String {
-      val paddedObjects = listOf(
-        lapNum,
-        driverName,
-        position,
-        lapTime,
-        gapToLeader,
-        fuelRemaining,
-        fuelUsed,
-        trackTemp,
-        driverIncidents,
-        teamIncidents,
-        optionalRepairsRemaining,
-        repairsRemaining,
-        pitIn,
-        pitOut,
-        pitTime,
-      ).map {
-        when (it) {
-          is Double,
-          is Float -> String.format("%.3f", it)
-          else -> {
-            val string = it.toString()
-            string.substring(0, min(string.length, 10))
-          }
-        }.padStart(10)
-      }
-      return Joiner.on(" | ").join(paddedObjects)
-    }
-
-    companion object {
-      val HEADER = Joiner.on(" | ").join(
-        listOf(
-          "Lap",
-          "DriverName",
-          "Position",
-          "LapTime",
-          "Gap Leader",
-          "Fuel",
-          "Fuel Used",
-          "TrackTemp",
-          "Incidents",
-          "TIncidents",
-          "Opt Rep",
-          "Repairs",
-          "PitIn",
-          "PitOut",
-          "PitTime",
-        ).map { it.padStart(10) }
-      )
-    }
-  }
+    val maxSpeed: Float,
+  )
 }

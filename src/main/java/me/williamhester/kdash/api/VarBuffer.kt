@@ -48,6 +48,16 @@ class VarBuffer(
     return byteBuffer.getInt(header.offset + position * 4)
   }
 
+  fun getArrayBoolean(varName: String, position: Int, default: Boolean? = null): Boolean {
+    val header = headers[varName] ?: return default ?: throw Exception("$varName not found")
+    return byteBuffer.getInt(header.offset + position * 4) != 0
+  }
+
+  fun getArrayDouble(varName: String, position: Int, default: Double? = null): Double {
+    val header = headers[varName] ?: return default ?: throw Exception("$varName not found")
+    return byteBuffer.getDouble(header.offset + position * 4)
+  }
+
   private fun <T> getInternal(varName: String, default: T?, getter: ByteBuffer.(Int) -> T): T {
     val header = headers[varName] ?: return default ?: throw Exception("$varName not found")
     return byteBuffer.getter(header.offset)

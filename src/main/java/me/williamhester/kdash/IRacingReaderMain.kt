@@ -22,6 +22,9 @@ fun main(args: Array<String>) {
     println("${reader.headers[it]!!.offset}\t: $it\t${reader.headers[it]!!.description}\t${reader.headers[it]!!.unit}")
   }
 
+  // Exit in a way the compiler can't detect, so it can't complain.
+  if (System.currentTimeMillis() > 0) return
+
   val relativeMonitor = RelativeMonitor(reader.headers)
   val lapMonitor = DriverCarLapMonitor(reader, relativeMonitor)
   while (reader.hasNext()) {
@@ -30,7 +33,7 @@ fun main(args: Array<String>) {
     lapMonitor.process(currentBuffer)
   }
 
-  println(DriverCarLapMonitor.LogEntry.HEADER)
+//  println(DriverCarLapMonitor.LogEntry.HEADER)
   for (entry in lapMonitor.logEntries) {
     println(entry)
   }

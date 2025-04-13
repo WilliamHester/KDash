@@ -26,8 +26,8 @@ internal constructor(
   internal fun parseMetadata(): SessionMetadata {
     val metadata = SessionMetadata("")
 
-    val byteBuffer = byteBufferProvider.get(fileHeader.sessionInfoOffset, fileHeader.sessionInfoLen)
-    Scanner(ByteArrayInputStream(byteBuffer.array())).use { reader ->
+    val byteArray = byteBufferProvider.getByteArray(fileHeader.sessionInfoOffset, fileHeader.sessionInfoLen)
+    Scanner(ByteArrayInputStream(byteArray)).use { reader ->
       reader.nextLine() // Throw away the three dashes from the beginning of the YAML
 
       val stack = Stack<StackEntry>()
@@ -54,7 +54,7 @@ internal constructor(
           stack.push(StackEntry(currentIndent, currentMetadata, previousKey))
           currentIndent = newIndent
           val newMetadata = SessionMetadata("")
-          currentMetadata.map[previousKey] = newMetadata
+          currentMetadata._map[previousKey] = newMetadata
           currentMetadata = newMetadata
         }
         if (key.startsWith("- ")) {
@@ -63,13 +63,13 @@ internal constructor(
           val upperMap = stack.peek().sessionMetadata
 
           key = key.substringAfter("- ")
-          val list = upperMap[stack.peek().key].list
+          val list = upperMap[stack.peek().key]._list
           currentMetadata = SessionMetadata("")
           currentIndent = newIndent
           list.add(currentMetadata)
         }
 
-        currentMetadata.map[key] = SessionMetadata(value)
+        currentMetadata._map[key] = SessionMetadata(value)
         previousKey = key
       }
     }
@@ -77,19 +77,23 @@ internal constructor(
   }
 
   class SessionMetadata(val value: String) : Iterable<SessionMetadata> {
-    internal val map = mutableMapOf<String, SessionMetadata>()
-    internal val list = mutableListOf<SessionMetadata>()
+    internal val _map = mutableMapOf<String, SessionMetadata>()
+    val map: Map<String, SessionMetadata>
+      get() = _map
+    internal val _list = mutableListOf<SessionMetadata>()
+    val list: List<SessionMetadata>
+      get() = _list
 
     operator fun get(key: String): SessionMetadata {
-      return map[key] ?: SessionMetadata("")
+      return _map[key] ?: SessionMetadata("")
     }
 
     operator fun get(pos: Int): SessionMetadata {
-      if (pos >= list.size) return SessionMetadata("")
-      return list[pos]
+      if (pos >= _list.size) return SessionMetadata("")
+      return _list[pos]
     }
 
-    override fun iterator(): Iterator<SessionMetadata> = list.iterator()
+    override fun iterator(): Iterator<SessionMetadata> = _list.iterator()
   }
 
   private class StackEntry(val indent: Int, val sessionMetadata: SessionMetadata, val key: String)
