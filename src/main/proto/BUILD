@@ -1,4 +1,4 @@
-load("@rules_java//java:defs.bzl", "java_proto_library")
+load("@protobuf//bazel:java_proto_library.bzl", "java_proto_library")
 load("@rules_proto//proto:defs.bzl", "proto_library")
 
 java_proto_library(
@@ -11,6 +11,6 @@ proto_library(
     name = "tdf_header_proto",
     srcs = ["tdf_header.proto"],
     deps = [
-        "@com_google_protobuf//:timestamp_proto",
+        "@protobuf//:timestamp_proto",
     ]
 )
