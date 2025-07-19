@@ -1,3 +1,5 @@
+module(name = 'kdash')
+
 # -- bazel_dep definitions -- #
 bazel_dep(name = "protobuf", version = "30.2")
 bazel_dep(name = "rules_proto", version = "6.0.0")
@@ -21,7 +23,7 @@ maven.install(
     artifacts = [
         "com.google.guava:guava:31.1-jre",
         "com.google.protobuf:protobuf-kotlin:3.17.0",
-        "com.google.protobuf:protobuf-java-util:3.20.1",
+        "com.google.protobuf:protobuf-java-util:4.31.1",
         "net.java.dev.jna:jna:5.10.0",
         "net.java.dev.jna:jna-platform:5.10.0",
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.6.10",
