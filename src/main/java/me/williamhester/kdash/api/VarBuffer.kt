@@ -50,7 +50,7 @@ class VarBuffer(
 
   fun getArrayBoolean(varName: String, position: Int, default: Boolean? = null): Boolean {
     val header = headers[varName] ?: return default ?: throw Exception("$varName not found")
-    return byteBuffer.getInt(header.offset + position * 4) != 0
+    return byteBuffer.get(header.offset + position * 4).toInt() != 0
   }
 
   fun getArrayDouble(varName: String, position: Int, default: Double? = null): Double {
