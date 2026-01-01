@@ -17,6 +17,8 @@ private fun gapString(gap: Double): String {
 fun main(args: Array<String>) {
   val reader = IRacingLoggedDataReader(Paths.get(args[0]))
 
+  println("Session info length: " + reader.fileHeader.sessionInfoLen)
+
   // Print each variable and its unit
   reader.headers.keys.forEach {
     println("${reader.headers[it]!!.offset}\t: $it\t${reader.headers[it]!!.description}\t${reader.headers[it]!!.unit}")

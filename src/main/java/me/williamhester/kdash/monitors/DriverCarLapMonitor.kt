@@ -1,9 +1,7 @@
 package me.williamhester.kdash.monitors
 
-import com.google.common.base.Joiner
 import me.williamhester.kdash.api.IRacingDataReader
 import me.williamhester.kdash.api.VarBuffer
-import kotlin.contracts.contract
 import kotlin.math.max
 import kotlin.math.min
 

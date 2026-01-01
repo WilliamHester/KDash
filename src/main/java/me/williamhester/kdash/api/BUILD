@@ -9,6 +9,7 @@ kt_jvm_library(
         "@maven//:net_java_dev_jna_jna",
         "@maven//:net_java_dev_jna_jna_platform",
         "@maven//:org_jetbrains_kotlin_kotlin_stdlib_jdk8",
+        "@maven//:com_google_guava_guava"
     ],
 )
 
